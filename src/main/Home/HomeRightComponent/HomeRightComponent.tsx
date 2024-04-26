@@ -41,6 +41,8 @@ const HomeRightComponent = () => {
     "Content-Type": "application/json",
   };
 
+  const getRoleAdmin = localStorage.getItem("authUser");
+
   const [invoiceProjectCodeOptions, setInvoiceProjectCodeOptions] = useState<
     string[]
   >([]);
@@ -341,7 +343,7 @@ const HomeRightComponent = () => {
                         <BsEyeFill size={16} />
                       </Link>
 
-                      {item["send"] === null && <>{renderUpdateModal(item)}</>}
+                      {getRoleAdmin && <>{renderUpdateModal(item)}</>}
                     </div>
                   </td>
 

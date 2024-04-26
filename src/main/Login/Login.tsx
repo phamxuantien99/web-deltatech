@@ -34,10 +34,6 @@ const Login = () => {
       .then((res) => {
         const accessToken = res.data.access_token;
         localStorage.setItem("authToken", accessToken);
-        localStorage.setItem(
-          "authRefreshToken",
-          res.data.user_info.is_superuser
-        );
         setUserInfo(res.data.user_info);
         localStorage.setItem(
           "authUser",
