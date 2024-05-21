@@ -4,12 +4,12 @@ import { CSSProperties, useContext, useEffect, useRef, useState } from "react";
 import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { BsEyeFill, BsPenFill } from "react-icons/bs";
-import { Link, useLocation, useNavigate } from "react-router-dom";
+import { Link } from "react-router-dom";
+import { FadeLoader } from "react-spinners";
 import AuthContext, { AuthContextType } from "../../context/AuthProvider";
 import { api } from "../../service/api/endpoint";
 import { useDebounce } from "../../service/hooks/useDebounce";
 import LogoutBtn from "../Logout/LogoutBtn";
-import { FadeLoader } from "react-spinners";
 
 const override: CSSProperties = {
   display: "flex",
@@ -31,9 +31,7 @@ const header = [
 ];
 
 const HomeRightComponent = () => {
-  const { auth, userInfo, setIsLoggedIn } = useContext(
-    AuthContext
-  ) as AuthContextType;
+  const { auth } = useContext(AuthContext) as AuthContextType;
   const url = auth ? `Bearer ${auth}` : "";
   const headers = {
     Authorization: url,
@@ -46,8 +44,6 @@ const HomeRightComponent = () => {
   const [invoiceProjectCodeOptions, setInvoiceProjectCodeOptions] = useState<
     string[]
   >([]);
-  const navigation = useNavigate();
-  const location = useLocation();
 
   const [searchQuery, setSearchQuery] = useState<string>("");
   const debouncedSearchValue = useDebounce(searchQuery, 1000);
@@ -70,11 +66,9 @@ const HomeRightComponent = () => {
         .get(api.getDataProduct(currentPage, searchValue, signed), { headers })
         .then((res) => res.data);
     } catch (error) {
-      // setIsLoggedIn(false);
-      // localStorage.removeItem("authToken");
-      // window.location.reload();
-      alert("Something went wrong, please login again!!");
-      // navigation("/", { replace: true, state: { from: location } });
+      alert(
+        "Something went wrong, please login again!! => component Right Home"
+      );
       return { error: "Failed to fetch data" };
     }
   };
@@ -87,6 +81,8 @@ const HomeRightComponent = () => {
     queryKey: ["dataTotalProduct", currentPage, debouncedSearchValue, isSigned],
     queryFn: () =>
       fetchDataLogistic(currentPage, debouncedSearchValue, isSigned),
+    refetchOnWindowFocus: false,
+
     enabled: !!auth,
   });
 
