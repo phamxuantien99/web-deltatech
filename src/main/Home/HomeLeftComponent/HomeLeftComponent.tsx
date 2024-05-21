@@ -80,19 +80,32 @@ const HomeLeftComponent = () => {
   const { data: dataTotalProduct } = useQuery({
     queryKey: ["dataTotalProduct"],
     queryFn: () => fetchDataLogistic(),
+    refetchOnWindowFocus: false,
+
     enabled: !!auth,
   });
 
-  // get component by project code
-  const fetchDataComponents = async (project_code: string, year: string) => {
+  const fetchDataComponents = async (
+    project_code: string,
+    year: string,
+    signal: AbortSignal
+  ) => {
+    const controller = new AbortController();
+    signal.addEventListener("abort", () => controller.abort());
+
     try {
       return await axios
         .get(api.getLogisticComponentByProjectCode(project_code, year), {
           headers,
+          signal: controller.signal,
         })
         .then((res) => res.data);
     } catch (error) {
-      return { error: "Failed to fetch data" };
+      if (axios.isCancel(error)) {
+        console.log("Request canceled", error.message);
+      } else {
+        return { error: "Failed to fetch data" };
+      }
     }
   };
 
@@ -102,7 +115,10 @@ const HomeLeftComponent = () => {
     refetch: retetchComponents,
   } = useQuery({
     queryKey: ["dataComponents", selectedProjectCode, selectedYear],
-    queryFn: () => fetchDataComponents(selectedProjectCode, selectedYear),
+    queryFn: ({ signal }) =>
+      fetchDataComponents(selectedProjectCode, selectedYear, signal),
+    refetchOnWindowFocus: false,
+
     enabled: !!auth && !!selectedProjectCode && !!selectedYear,
   });
 
@@ -269,13 +285,6 @@ const HomeLeftComponent = () => {
         acc[currentValue.serial_no].components.push(...currentValue.components);
       }
 
-      // Thêm additional_component vào mảng components của accumulator
-      // if (currentValue.additional_component) {
-      //   acc[currentValue.serial_no].components.push(
-      //     currentValue.additional_component
-      //   );
-      // }
-
       return acc;
     }, {})
   );
@@ -316,7 +325,7 @@ const HomeLeftComponent = () => {
         if ((e.response.status = 409)) {
           alert(e.response.data.detail);
         } else {
-          alert("Something went wrong, please try again");
+          alert("Something went wrong, please try again => HomeLeft Component");
         }
       })
       .finally(() => setGenerating(false));
