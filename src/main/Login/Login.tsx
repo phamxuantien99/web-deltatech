@@ -34,6 +34,7 @@ const Login = () => {
       .then((res) => {
         const accessToken = res.data.access_token;
         localStorage.setItem("authToken", accessToken);
+        localStorage.setItem("refreshToken", res.data.refresh_token);
         setUserInfo(res.data.user_info);
         localStorage.setItem(
           "authUser",
