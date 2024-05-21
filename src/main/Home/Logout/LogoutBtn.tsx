@@ -16,6 +16,8 @@ const LogoutBtn = () => {
     e.preventDefault();
     setIsLoggedIn(false);
     localStorage.removeItem("authToken");
+    localStorage.removeItem("refreshToken");
+    localStorage.removeItem("authUser");
     setUserInfo(null);
     // window.location.reload();
     navigation("/", { replace: true, state: { from: location } });
