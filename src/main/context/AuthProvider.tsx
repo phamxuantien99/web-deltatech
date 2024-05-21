@@ -48,20 +48,20 @@ export const AuthProvider: React.FC<Props> = ({ children }) => {
     }
   }, [isLoggedIn]);
 
-  useEffect(() => {
-    // Thêm sự kiện cho trình duyệt trước khi component unmounts
-    const handleBeforeUnload = () => {
-      if (!isLoggedIn) {
-        localStorage.removeItem("authToken");
-      }
-    };
-    window.addEventListener("beforeunload", handleBeforeUnload);
+  // useEffect(() => {
+  //   // Thêm sự kiện cho trình duyệt trước khi component unmounts
+  //   const handleBeforeUnload = () => {
+  //     if (!isLoggedIn) {
+  //       localStorage.removeItem("authToken");
+  //     }
+  //   };
+  //   window.addEventListener("beforeunload", handleBeforeUnload);
 
-    return () => {
-      // Xóa sự kiện trước khi component unmounts
-      window.removeEventListener("beforeunload", handleBeforeUnload);
-    };
-  }, [isLoggedIn]);
+  //   return () => {
+  //     // Xóa sự kiện trước khi component unmounts
+  //     window.removeEventListener("beforeunload", handleBeforeUnload);
+  //   };
+  // }, [isLoggedIn]);
 
   const authContextValue: AuthContextType = {
     auth,
