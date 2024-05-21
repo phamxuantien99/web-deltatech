@@ -156,7 +156,10 @@ function InvoiceCase2() {
                                 return <th>{index + 1}</th>;
                               case "description":
                                 return (
-                                  <td key={headerIndex}>
+                                  <td
+                                    key={headerIndex}
+                                    className="w-full whitespace-pre-wrap inline-block"
+                                  >
                                     {item["description"]}
                                     <br />
                                     <div className="text-[12px]">
