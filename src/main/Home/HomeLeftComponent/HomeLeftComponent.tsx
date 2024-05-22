@@ -5,9 +5,9 @@ import DatePicker from "react-datepicker";
 import "react-datepicker/dist/react-datepicker.css";
 import { useNavigate } from "react-router-dom";
 import Select from "react-select";
+import { FadeLoader } from "react-spinners";
 import AuthContext, { AuthContextType } from "../../context/AuthProvider";
 import { api } from "../../service/api/endpoint";
-import { FadeLoader } from "react-spinners";
 
 const override: CSSProperties = {
   display: "flex",
@@ -15,6 +15,15 @@ const override: CSSProperties = {
   borderColor: "red",
   fontSize: "50px",
 };
+
+interface InputData {
+  serial_no: string;
+  additional_component: string;
+}
+
+interface InputErrors {
+  [key: string]: boolean;
+}
 
 const HomeLeftComponent = () => {
   const navigation = useNavigate();
@@ -28,9 +37,7 @@ const HomeLeftComponent = () => {
   const [listSerialNumber, setListSerialNumber] = useState<string[]>([]);
   const [selectedSerialNumber, setSelectedSerialNumber] = useState<any>([]);
   const [additionalComponents, setAdditionalComponents] = useState<any>([]);
-  const [isCheckedAdditional, setIsCheckedAdditional] =
-    useState<boolean>(false);
-  const [isValidateInput, setIsValidateInput] = useState<boolean>(false);
+
   const [contactPerson, setContactPerson] = useState<string>("");
   const [yourRef, setYourRef] = useState<string>("");
   const [contactNumber, setContactNumber] = useState<string>("");
@@ -223,12 +230,14 @@ const HomeLeftComponent = () => {
     );
   };
 
+  const [errors, setErrors] = useState<InputErrors>({});
+
   // select component options other
   const getSelectedComponents = (e: any, serial: any) => {
     const { checked } = e.target;
-    setIsCheckedAdditional(checked);
+    // setIsCheckedAdditional(checked);
     if (checked) {
-      setIsCheckedAdditional(checked);
+      // setIsCheckedAdditional(checked);
       const valComp = [
         ...additionalComponents,
         { serial_no: serial, additional_component: "" },
@@ -241,7 +250,7 @@ const HomeLeftComponent = () => {
 
     // Case 2  : The user unchecks the box
     else {
-      setIsCheckedAdditional(checked);
+      // setIsCheckedAdditional(checked);
       const payload = additionalComponents.filter((item: any) => {
         return item.serial_no !== serial;
       });
@@ -251,24 +260,39 @@ const HomeLeftComponent = () => {
   };
 
   const getAdditionalComponents = (e: any, serial: any) => {
-    const isCheckValidate = dataComponents?.founds
-      ?.find((item: any) => item.serial_no === serial)
-      ?.available_components?.some((value: string) => value === e.target.value);
-    setIsValidateInput(isCheckValidate);
     const objIndex = additionalComponents.findIndex(
       (obj: any) => obj.serial_no === serial
     );
-
     let newArray = [...additionalComponents];
-    if (e.target.value !== "" && !isCheckValidate) {
+    if (e.target.value !== "") {
       newArray[objIndex].additional_component = e.target.value;
     } else {
-      newArray[objIndex].additional_component = [];
+      newArray[objIndex].additional_component = "";
     }
     setAdditionalComponents(newArray);
   };
 
-  // const mergeArray = [...selectedComponent, ...additionalComponents];
+  const validateOptionsSerial = () => {
+    const newErrors: InputErrors = {};
+    let hasError = false;
+    additionalComponents.forEach((additionalComponent: any) => {
+      const { serial_no, additional_component } = additionalComponent;
+      const selected = dataComponents?.founds
+        .filter((sc: any) => sc.serial_no === serial_no)
+        .map((item: any) => item.available_components)
+        .flat()
+        .includes(additional_component);
+      if (!additional_component || selected) {
+        newErrors[serial_no] = true;
+        hasError = true;
+      } else {
+        newErrors[serial_no] = false;
+      }
+    });
+
+    setErrors(newErrors);
+    return !hasError;
+  };
 
   const mergedData = Object.values(
     selectedComponent.reduce((acc: any, currentValue: any) => {
@@ -291,7 +315,7 @@ const HomeLeftComponent = () => {
 
   const [generating, setGenerating] = useState<boolean>(false);
 
-  const _handleGenerateInvoice = async (event: any) => {
+  const _handleGenerateInvoice = (event: any) => {
     event.preventDefault();
 
     if (generating) return;
@@ -303,32 +327,40 @@ const HomeLeftComponent = () => {
       additional_components: additionalComponents,
     };
 
-    axios
-      .post(
-        api.postGenInvoice(
-          Number(selectedYear),
-          selectedProjectCode,
-          contactPerson,
-          contactNumber,
-          driver,
-          yourRef,
-          remark,
-          filteredDate
-        ),
-        payload,
-        { headers }
-      )
-      .then((res: any) => {
-        navigation("/home/invoice", { state: res.data });
-      })
-      .catch((e) => {
-        if ((e.response.status = 409)) {
-          alert(e.response.data.detail);
-        } else {
-          alert("Something went wrong, please try again => HomeLeft Component");
-        }
-      })
-      .finally(() => setGenerating(false));
+    if (validateOptionsSerial()) {
+      // Submit form nếu không có lỗi
+
+      axios
+        .post(
+          api.postGenInvoice(
+            Number(selectedYear),
+            selectedProjectCode,
+            contactPerson,
+            contactNumber,
+            driver,
+            yourRef,
+            remark,
+            filteredDate
+          ),
+          payload,
+          { headers }
+        )
+        .then((res: any) => {
+          navigation("/home/invoice", { state: res.data });
+        })
+        .catch((e) => {
+          if ((e.response.status = 409)) {
+            alert(e.response.data.detail);
+          } else {
+            alert(
+              "Something went wrong, please try again => HomeLeft Component"
+            );
+          }
+        })
+        .finally(() => setGenerating(false));
+    } else {
+      setGenerating(false);
+    }
   };
 
   return (
@@ -493,37 +525,16 @@ const HomeLeftComponent = () => {
                                   onChange={(event) =>
                                     getAdditionalComponents(event, serial)
                                   }
-                                  // disabled={!isCheckedAdditional}
                                 />
-                                {isValidateInput && (
+                                {errors[serial] && (
                                   <p className="text-red-600 mt-1 text-sm">
-                                    The value cannot the same
+                                    The value cannot the same or empty
                                   </p>
                                 )}
                               </div>
                             ) : (
                               <div></div>
                             )}
-                            {/* {isCheckedAdditional ? (
-                              <div>
-                                <input
-                                  type="text"
-                                  id="optionInput"
-                                  className="input input-bordered w-full"
-                                  onChange={(event) =>
-                                    getAdditionalComponents(event, serial)
-                                  }
-                                  disabled={!isCheckedAdditional}
-                                />
-                                {isValidateInput && (
-                                  <p className="text-red-600 mt-1 text-sm">
-                                    The value cannot the same
-                                  </p>
-                                )}
-                              </div>
-                            ) : (
-                              <div></div>
-                            )} */}
                           </div>
                         </div>
                       </fieldset>
@@ -603,7 +614,7 @@ const HomeLeftComponent = () => {
       <button
         type="submit"
         className={`btn btn - primary ${generating && "loading"}`}
-        disabled={isValidateInput}
+        // disabled={isValidateInput}
       >
         Generate Delivery Order
       </button>
