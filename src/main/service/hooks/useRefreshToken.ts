@@ -12,6 +12,8 @@ const UseRefreshToken = () => {
     const reponse = await axios.put(`${BASE_URL}/auth/refresh`, {
       refresh_token: getRefreshToken(),
     });
+        localStorage.setItem("authToken", reponse.data[0]);
+
     setAuth((prev: any) => {
       return { ...prev, access_token: reponse.data[0] };
     });
