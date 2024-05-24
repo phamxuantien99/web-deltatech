@@ -8,6 +8,7 @@ import { Link } from "react-router-dom";
 import { FadeLoader } from "react-spinners";
 import AuthContext, { AuthContextType } from "../../context/AuthProvider";
 import { api } from "../../service/api/endpoint";
+import UseRefreshToken from "../../service/hooks/useRefreshToken";
 import { useDebounce } from "../../service/hooks/useDebounce";
 import LogoutBtn from "../Logout/LogoutBtn";
 
@@ -49,8 +50,6 @@ const HomeRightComponent = () => {
   const debouncedSearchValue = useDebounce(searchQuery, 1000);
   const [currentPage, setCurrentPage] = useState<number>(1);
   const [isSigned, setIsSigned] = useState<string>("all");
-  const [invoiceFilterByProjectCode, setInvoiceFilterByProjectCode] =
-    useState<string>("all");
 
   const handleSearch = (value: string) => {
     setSearchQuery(value);
@@ -66,9 +65,7 @@ const HomeRightComponent = () => {
         .get(api.getDataProduct(currentPage, searchValue, signed), { headers })
         .then((res) => res.data);
     } catch (error) {
-      alert(
-        "Something went wrong, please login again!! => component Right Home"
-      );
+      UseRefreshToken();
       return { error: "Failed to fetch data" };
     }
   };
@@ -89,12 +86,6 @@ const HomeRightComponent = () => {
   const totalPages = Math.ceil(
     dataTotalProduct?.search_options?.total_count / 20
   );
-
-  // Tạo một mảng từ 1 đến totalPage
-  // const everyPages = Array.from(
-  //   { length: totalPages },
-  //   (_, index) => index + 1
-  // );
 
   useEffect(() => {
     if (dataTotalProduct?.founds) {
