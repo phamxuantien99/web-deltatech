@@ -8,6 +8,7 @@ import Select from "react-select";
 import { FadeLoader } from "react-spinners";
 import AuthContext, { AuthContextType } from "../../context/AuthProvider";
 import { api } from "../../service/api/endpoint";
+import UseRefreshToken from "../../service/hooks/useRefreshToken";
 
 const override: CSSProperties = {
   display: "flex",
@@ -80,6 +81,7 @@ const HomeLeftComponent = () => {
         .get(api.getLogisticSerialNumber, { headers })
         .then((res) => res.data);
     } catch (error) {
+      UseRefreshToken();
       return { error: "Failed to fetch data" };
     }
   };
@@ -111,6 +113,8 @@ const HomeLeftComponent = () => {
       if (axios.isCancel(error)) {
         console.log("Request canceled", error.message);
       } else {
+        UseRefreshToken();
+
         return { error: "Failed to fetch data" };
       }
     }
