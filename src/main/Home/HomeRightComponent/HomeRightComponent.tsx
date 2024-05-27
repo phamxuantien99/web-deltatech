@@ -8,7 +8,7 @@ import { Link } from "react-router-dom";
 import { FadeLoader } from "react-spinners";
 import AuthContext, { AuthContextType } from "../../context/AuthProvider";
 import { api } from "../../service/api/endpoint";
-import UseRefreshToken from "../../service/hooks/useRefreshToken";
+import axiosInstance from "../../service/hooks/axiosInstance";
 import { useDebounce } from "../../service/hooks/useDebounce";
 import LogoutBtn from "../Logout/LogoutBtn";
 
@@ -61,11 +61,11 @@ const HomeRightComponent = () => {
     signed?: string
   ) => {
     try {
-      return await axios
-        .get(api.getDataProduct(currentPage, searchValue, signed), { headers })
-        .then((res) => res.data);
+      const response = await axiosInstance.get(
+        api.getDataProduct(currentPage, searchValue, signed)
+      );
+      return response.data;
     } catch (error) {
-      UseRefreshToken();
       return { error: "Failed to fetch data" };
     }
   };
@@ -79,7 +79,6 @@ const HomeRightComponent = () => {
     queryFn: () =>
       fetchDataLogistic(currentPage, debouncedSearchValue, isSigned),
     refetchOnWindowFocus: false,
-
     enabled: !!auth,
   });
 
@@ -278,6 +277,7 @@ const HomeRightComponent = () => {
   return (
     <div className="mx-[auto] w-full">
       <div className="flex justify-end mb-5">
+        {/* <button onClick={() => refresh()}>Refresh</button> */}
         {/* <select
           name="selectedYeaer"
           value={invoiceFilterByProjectCode}
