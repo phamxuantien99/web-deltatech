@@ -8,14 +8,14 @@ export const api = {
     searchValue?: string,
     signed?: string
   ) =>
-    `${BASE_URL}/logistic?page=${currentPage}&delivery_order_ref_or_company_search=${searchValue?.toUpperCase()}&signed=${signed}`,
+    `/logistic?page=${currentPage}&delivery_order_ref_or_company_search=${searchValue?.toUpperCase()}&signed=${signed}`,
   getDataProductDetail: (productId: number) =>
     `${BASE_URL}/logistic/${productId}`,
 
-  getLogisticSerialNumber: `${BASE_URL}/logistic/get-serial-number`,
+  getLogisticSerialNumber: `/logistic/get-serial-number`,
 
   getLogisticComponentByProjectCode: (project_code: string, year: string) =>
-    `${BASE_URL}/logistic/get-component-by-project-code?project_code=${project_code}&year=${year}`,
+    `/logistic/get-component-by-project-code?project_code=${project_code}&year=${year}`,
 
   postGenInvoice: (
     year: number,
