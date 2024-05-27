@@ -9,6 +9,7 @@ import { FadeLoader } from "react-spinners";
 import AuthContext, { AuthContextType } from "../../context/AuthProvider";
 import { api } from "../../service/api/endpoint";
 import UseRefreshToken from "../../service/hooks/useRefreshToken";
+import axiosInstance from "../../service/hooks/axiosInstance";
 
 const override: CSSProperties = {
   display: "flex",
@@ -77,8 +78,8 @@ const HomeLeftComponent = () => {
 
   const fetchDataLogistic = async () => {
     try {
-      return await axios
-        .get(api.getLogisticSerialNumber, { headers })
+      return await axiosInstance
+        .get(api.getLogisticSerialNumber)
         .then((res) => res.data);
     } catch (error) {
       UseRefreshToken();
@@ -103,9 +104,8 @@ const HomeLeftComponent = () => {
     signal.addEventListener("abort", () => controller.abort());
 
     try {
-      return await axios
+      return await axiosInstance
         .get(api.getLogisticComponentByProjectCode(project_code, year), {
-          headers,
           signal: controller.signal,
         })
         .then((res) => res.data);
@@ -129,7 +129,6 @@ const HomeLeftComponent = () => {
     queryFn: ({ signal }) =>
       fetchDataComponents(selectedProjectCode, selectedYear, signal),
     refetchOnWindowFocus: false,
-
     enabled: !!auth && !!selectedProjectCode && !!selectedYear,
   });
 
